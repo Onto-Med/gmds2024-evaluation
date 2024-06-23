@@ -1,5 +1,6 @@
 package care.smith.top.terminology.versioning;
 
+import care.smith.top.terminology.versioning.util.BatchRunnerException;
 import com.beust.jcommander.*;
 import com.beust.jcommander.converters.FileConverter;
 
@@ -56,8 +57,7 @@ public class Main {
       
       new AnalysisBatchRunner(inputDirectory);
       
-    } catch (IOException | ClassNotFoundException | InvocationTargetException | InstantiationException |
-             IllegalAccessException e) {
+    } catch (BatchRunnerException e) {
       throw new RuntimeException(e);
     }
   }

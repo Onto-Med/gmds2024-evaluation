@@ -30,4 +30,5 @@ public abstract class AbstractTerminologyVersionTransitionAnalyser {
   public abstract List getRenamings();
   public abstract List getLabelAdditions();
   public abstract List getLabelDeletions();
+  
 }

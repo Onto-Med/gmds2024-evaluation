@@ -1,5 +1,6 @@
 package care.smith.top.terminology.versioning;
 
+import care.smith.top.terminology.versioning.util.BatchRunnerException;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReaderHeaderAware;
 import com.opencsv.exceptions.CsvValidationException;
@@ -9,7 +10,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Entry point for a batch run on a set of terminology releases.
@@ -23,23 +23,25 @@ public class AnalysisBatchRunner {
   
   private final File sourceDirectory;
   
-  public AnalysisBatchRunner(File sourceDirectory) throws IOException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
+  @SuppressWarnings("unchecked")
+  public AnalysisBatchRunner(File sourceDirectory) throws BatchRunnerException {
     this.sourceDirectory = sourceDirectory;
     
     var terminologyName = sourceDirectory.getName().toUpperCase(Locale.ROOT);
-    Class<AbstractTerminologyVersionTransitionAnalyser> analyserClass = (Class<AbstractTerminologyVersionTransitionAnalyser>) Class.forName(String.format("%s.%sVersionTransitionAnalyser", AnalysisBatchRunner.class.getPackageName(), terminologyName));
     
-    var csvReader = new CSVReaderHeaderAware(new FileReader(new File(sourceDirectory, "properties.csv")));
-    Map<String, String> row;
-    while (true) {
-      try {
-        if ((row = csvReader.readMap()) == null) break;
-        
+    
+    try {
+      Class<AbstractTerminologyVersionTransitionAnalyser> analyserClass = (Class<AbstractTerminologyVersionTransitionAnalyser>) Class.forName(String.format("%s.%sVersionTransitionAnalyser", AnalysisBatchRunner.class.getPackageName(), terminologyName));
+      
+      var csvReader = new CSVReaderHeaderAware(new FileReader(new File(sourceDirectory, "properties.csv")));
+      Map<String, String> row;
+      while ((row = csvReader.readMap()) != null) {
         AbstractTerminologyVersionTransitionAnalyser analyser = analyserClass.getDeclaredConstructor(Properties.class).newInstance(buildProperties(row));
         analyser.getAdditions();
-      } catch (CsvValidationException | NoSuchMethodException e) {
-        throw new IOException(e);
       }
+    } catch (ClassNotFoundException | IOException | CsvValidationException | NoSuchMethodException |
+             InstantiationException | IllegalAccessException | InvocationTargetException e) {
+      throw new BatchRunnerException(e.getMessage(), e);
     }
   }
   
