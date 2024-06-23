@@ -32,27 +32,12 @@ public class OPSVersionTransitionAnalyser extends AbstractTerminologyVersionTran
   }
   
   private void buildTransitions() throws VersionInfoFileNotFoundException {
-    System.out.format("Scanning directory %s for files...%n", getProperties().getDirectory());
-
     detectFiles(getProperties().getDirectory());
-    
-    if (fileOld == null || fileNew == null)
-      throw new VersionInfoFileNotFoundException("Could not find version info files.");
-    if (fileOld.equals(fileNew))
-      throw new VersionInfoFileNotFoundException(String.format("Could only find one version info file but expected two: %s.", fileOld.getAbsolutePath()));
-    
-    System.out.printf("Detected old version: %s%n", fileOld.getName());
-    System.out.printf("Detected new version: %s%n", fileNew.getName());
-    
-    if (fileTransitions == null)
-      throw new VersionInfoFileNotFoundException("Could not find transition info file.");
-    
-    System.out.printf("Detected transition information: %s%n", fileTransitions.getName());
-    System.out.println();
-    
   }
   
-  private void detectFiles(File folder) {
+  private void detectFiles(File folder) throws VersionInfoFileNotFoundException {
+    System.out.format("Scanning directory %s for files...%n", getProperties().getDirectory());
+
     Arrays.stream(folder.listFiles(file -> !file.getName().toLowerCase().contains("liesmich"))).forEach(file -> {
       if (file.getName().toLowerCase().contains("umsteiger")) {
         fileTransitions = file;
@@ -73,6 +58,8 @@ public class OPSVersionTransitionAnalyser extends AbstractTerminologyVersionTran
         }
       }
     });
+    
+    checkFiles();
   }
   
   private static final Pattern yearPattern = Pattern.compile("(\\d{4})");
@@ -80,6 +67,23 @@ public class OPSVersionTransitionAnalyser extends AbstractTerminologyVersionTran
   private int getYear(File file) {
     Matcher matcher = yearPattern.matcher(file.getName());
     return matcher.find() ? Integer.parseInt(matcher.group(1)) : -1;
+  }
+  
+  private void checkFiles() throws VersionInfoFileNotFoundException {
+    if (fileOld == null || fileNew == null)
+      throw new VersionInfoFileNotFoundException("Could not find version info files.");
+    if (fileOld.equals(fileNew))
+      throw new VersionInfoFileNotFoundException(String.format("Could only find one version info file but expected two: %s.", fileOld.getAbsolutePath()));
+    
+    System.out.printf("Detected old version: %s%n", fileOld.getName());
+    System.out.printf("Detected new version: %s%n", fileNew.getName());
+    
+    if (fileTransitions == null)
+      throw new VersionInfoFileNotFoundException("Could not find transition info file.");
+    
+    System.out.printf("Detected transition information: %s%n", fileTransitions.getName());
+    System.out.println();
+    
   }
   
   @Override

@@ -57,8 +57,9 @@ public class Main {
       
       new AnalysisBatchRunner(inputDirectory);
       
-    } catch (BatchRunnerException e) {
-      throw new RuntimeException(e);
+    } catch (Exception e) {
+      System.out.printf("An error occurred while running the batch runner: %s\n", e.getMessage());
+      e.printStackTrace();
     }
   }
 }

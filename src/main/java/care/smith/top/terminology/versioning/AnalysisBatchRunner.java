@@ -1,9 +1,7 @@
 package care.smith.top.terminology.versioning;
 
-import care.smith.top.terminology.versioning.util.BatchRunnerException;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReaderHeaderAware;
-import com.opencsv.exceptions.CsvValidationException;
 
 import java.io.File;
 import java.io.FileReader;
@@ -24,24 +22,23 @@ public class AnalysisBatchRunner {
   private final File sourceDirectory;
   
   @SuppressWarnings("unchecked")
-  public AnalysisBatchRunner(File sourceDirectory) throws BatchRunnerException {
+  public AnalysisBatchRunner(File sourceDirectory) throws Exception {
     this.sourceDirectory = sourceDirectory;
     
     var terminologyName = sourceDirectory.getName().toUpperCase(Locale.ROOT);
     
+    Class<AbstractTerminologyVersionTransitionAnalyser> analyserClass = (Class<AbstractTerminologyVersionTransitionAnalyser>) Class.forName(String.format("%s.%sVersionTransitionAnalyser", AnalysisBatchRunner.class.getPackageName(), terminologyName));
     
-    try {
-      Class<AbstractTerminologyVersionTransitionAnalyser> analyserClass = (Class<AbstractTerminologyVersionTransitionAnalyser>) Class.forName(String.format("%s.%sVersionTransitionAnalyser", AnalysisBatchRunner.class.getPackageName(), terminologyName));
-      
-      var csvReader = new CSVReaderHeaderAware(new FileReader(new File(sourceDirectory, "properties.csv")));
-      Map<String, String> row;
-      while ((row = csvReader.readMap()) != null) {
+    var csvReader = new CSVReaderHeaderAware(new FileReader(new File(sourceDirectory, "properties.csv")));
+    
+    Map<String, String> row;
+    while ((row = csvReader.readMap()) != null) {
+      try {
         AbstractTerminologyVersionTransitionAnalyser analyser = analyserClass.getDeclaredConstructor(Properties.class).newInstance(buildProperties(row));
         analyser.getAdditions();
+      } catch (InvocationTargetException e) {
+        throw (Exception)e.getCause();
       }
-    } catch (ClassNotFoundException | IOException | CsvValidationException | NoSuchMethodException |
-             InstantiationException | IllegalAccessException | InvocationTargetException e) {
-      throw new BatchRunnerException(e.getMessage(), e);
     }
   }
   
