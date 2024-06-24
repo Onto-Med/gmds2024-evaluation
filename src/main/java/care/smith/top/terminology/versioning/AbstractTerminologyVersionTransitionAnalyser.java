@@ -1,6 +1,5 @@
 package care.smith.top.terminology.versioning;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -23,12 +22,12 @@ public abstract class AbstractTerminologyVersionTransitionAnalyser {
     return properties;
   }
   
-  public abstract List getAdditions();
-  public abstract List getDeletions();
-  public abstract List getMerges();
-  public abstract List getSplits();
-  public abstract List getRenamings();
-  public abstract List getLabelAdditions();
-  public abstract List getLabelDeletions();
-  
+  public abstract List<CodeChanges> getAdditions();
+  public abstract List<CodeChanges> getDeletions();
+  public abstract List<CodeChanges> getMerges();
+  public abstract List<CodeChanges> getSplits();
+  public abstract List<CodeChanges> getReplacements();
+  public abstract List<CodeChanges> getLabelAdditions();
+  public abstract List<CodeChanges> getLabelDeletions();
+  public abstract List<CodeChanges> getRelabelings();
 }

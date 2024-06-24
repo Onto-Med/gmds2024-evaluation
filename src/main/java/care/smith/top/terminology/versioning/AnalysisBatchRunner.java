@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -35,7 +36,14 @@ public class AnalysisBatchRunner {
     while ((row = csvReader.readMap()) != null) {
       try {
         AbstractTerminologyVersionTransitionAnalyser analyser = analyserClass.getDeclaredConstructor(Properties.class).newInstance(buildProperties(row));
-        analyser.getAdditions();
+        System.out.printf("getAdditions: %d%n", analyser.getAdditions().size());
+        System.out.printf("getDeletions: %d%n", analyser.getDeletions().size());
+        System.out.printf("getReplacements: %d%n", analyser.getReplacements().size());
+        System.out.printf("getSplits: %d%n", analyser.getSplits().size());
+        System.out.printf("getMerges: %d%n", analyser.getMerges().size());
+        System.out.printf("getLabelAdditions: %d%n", analyser.getLabelAdditions().size());
+        System.out.printf("getLabelDeletions: %d%n", analyser.getLabelDeletions().size());
+        System.out.printf("getRelabelings: %d%n", analyser.getRelabelings().size());
       } catch (InvocationTargetException e) {
         throw (Exception)e.getCause();
       }
@@ -45,6 +53,7 @@ public class AnalysisBatchRunner {
   private Properties buildProperties(Map<String, String> row) throws IOException {
     String path = row.get("path");
     char separator = row.get("separator").charAt(0);
+    String encoding = row.get("encoding");
     String columnsCsvRaw = row.get("columns"); // this is the value of a CSV cell, but it's CSV itself
     
     List<String> columnList = Arrays.stream(new CSVParserBuilder().withSeparator(separator).build().parseLine(columnsCsvRaw)).toList();
@@ -52,6 +61,6 @@ public class AnalysisBatchRunner {
     columns.put(Column.CODE_OLD, columnList.indexOf(Column.CODE_OLD.getCode()));
     columns.put(Column.CODE_NEW, columnList.indexOf(Column.CODE_NEW.getCode()));
     
-    return new Properties(new File(sourceDirectory, path), columns);
+    return new Properties(new File(sourceDirectory, path), separator, Charset.forName(encoding), columns);
   }
 }

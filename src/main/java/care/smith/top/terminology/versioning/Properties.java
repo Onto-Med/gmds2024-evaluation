@@ -1,11 +1,7 @@
 package care.smith.top.terminology.versioning;
 
-import com.opencsv.CSVIterator;
-import com.opencsv.CSVParserBuilder;
-
 import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 /**
@@ -16,11 +12,15 @@ import java.util.Map;
  * @author Ralph Schäfermeier
  */
 public class Properties {
-  private File directory;
-  private Map<Column, Integer> columnPositions;
+  private final File directory;
+  private final char separator;
+  private final Charset encoding;
+  private final Map<Column, Integer> columnPositions;
   
-  public Properties(File directory, Map<Column, Integer> columnPositions) {
+  public Properties(File directory, char separator, Charset encoding, Map<Column, Integer> columnPositions) {
     this.directory = directory;
+    this.separator = separator;
+    this.encoding = encoding;
     this.columnPositions = columnPositions;
   }
   
@@ -30,5 +30,13 @@ public class Properties {
   
   public Map<Column, Integer> getColumnPositions() {
     return columnPositions;
+  }
+  
+  public char getSeparator() {
+    return separator;
+  }
+  
+  public Charset getEncoding() {
+    return encoding;
   }
 }
