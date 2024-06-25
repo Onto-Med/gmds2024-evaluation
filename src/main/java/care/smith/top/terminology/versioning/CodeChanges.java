@@ -79,9 +79,8 @@ public class CodeChanges {
       return SemanticChange.merge;
     }
     
-    System.out.println(mappingsOld);
-    System.out.println(mappingsNew);
-    throw new RuntimeException("This should not happen. Look at the above sets and figure out what went wrong.");
+    System.err.println(String.format("%s has been mapped to %s but also to undefined. This is an error in the source and will be ignored.%n", mappingsOld, mappingsNew));
+    return SemanticChange.none;
   }
   
   public boolean containsOldCode(String code) {
