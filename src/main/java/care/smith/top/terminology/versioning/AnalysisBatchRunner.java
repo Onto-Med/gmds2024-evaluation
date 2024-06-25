@@ -5,6 +5,7 @@ import com.opencsv.CSVReaderHeaderAware;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
@@ -26,28 +27,35 @@ public class AnalysisBatchRunner {
   public AnalysisBatchRunner(File sourceDirectory) throws Exception {
     this.sourceDirectory = sourceDirectory;
     
+    File resultFile = new File(sourceDirectory, String.format("eval_%s.csv", sourceDirectory.getName()));
+    FileWriter out = new FileWriter(resultFile);
+    
     var terminologyName = sourceDirectory.getName().toUpperCase(Locale.ROOT);
     
     Class<AbstractTerminologyVersionTransitionAnalyser> analyserClass = (Class<AbstractTerminologyVersionTransitionAnalyser>) Class.forName(String.format("%s.%sVersionTransitionAnalyser", AnalysisBatchRunner.class.getPackageName(), terminologyName));
     
     var csvReader = new CSVReaderHeaderAware(new FileReader(new File(sourceDirectory, "properties.csv")));
+    int year = 2004;
+    out.write("year, additions, deletions, replacements, splits, merges, label additions, label deletions, relabelings\n");
     
     Map<String, String> row;
     while ((row = csvReader.readMap()) != null) {
       try {
         AbstractTerminologyVersionTransitionAnalyser analyser = analyserClass.getDeclaredConstructor(Properties.class).newInstance(buildProperties(row));
-        System.out.printf("getAdditions: %d%n", analyser.getAdditions().size());
-        System.out.printf("getDeletions: %d%n", analyser.getDeletions().size());
-        System.out.printf("getReplacements: %d%n", analyser.getReplacements().size());
-        System.out.printf("getSplits: %d%n", analyser.getSplits().size());
-        System.out.printf("getMerges: %d%n", analyser.getMerges().size());
-        System.out.printf("getLabelAdditions: %d%n", analyser.getLabelAdditions().size());
-        System.out.printf("getLabelDeletions: %d%n", analyser.getLabelDeletions().size());
-        System.out.printf("getRelabelings: %d%n", analyser.getRelabelings().size());
+        out.write(year++ + ", ");
+        out.write(analyser.getAdditions().size() + ", ");
+        out.write(analyser.getDeletions().size() + ", ");
+        out.write(analyser.getReplacements().size() + ", ");
+        out.write(analyser.getSplits().size() + ", ");
+        out.write(analyser.getMerges().size() + ", ");
+        out.write(analyser.getLabelAdditions().size() + ", ");
+        out.write(analyser.getLabelDeletions().size() + ", ");
+        out.write(analyser.getRelabelings().size() + "\n");
       } catch (InvocationTargetException e) {
         throw (Exception)e.getCause();
       }
     }
+    out.close();
   }
   
   private Properties buildProperties(Map<String, String> row) throws IOException {
