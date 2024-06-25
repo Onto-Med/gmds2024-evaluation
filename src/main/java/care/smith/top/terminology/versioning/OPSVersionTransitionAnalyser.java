@@ -51,8 +51,8 @@ public class OPSVersionTransitionAnalyser extends AbstractTerminologyVersionTran
             new CSVParserBuilder().withSeparator(getProperties().getSeparator()).build()
     ).build().iterator().forEachRemaining(cells -> {
       
-      String oldCode = cells[columnNew];
-      String newCode = cells[columnOld];
+      String oldCode = cells[columnOld];
+      String newCode = cells[columnNew];
       
       if (oldCode.equals(undefinedCode)) {
         // this code is new
